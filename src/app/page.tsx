@@ -1,103 +1,160 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import { useState, useEffect } from "react";
+// import SplineWrapper from "../components/SplineWrapper";
+import ScrollObserver from "../components/ScrollObserver";
+import "./zscroll.css";
+
+// Dynamically import components
+// const AnimatedGrid = dynamic(() => import("../components/AnimatedGrid"));
+const ZScrollScene = dynamic(() => import("../components/ZScrollScene"), { ssr: false });
+const ZScrollContent = dynamic(() => import("../components/ZScrollContent"), { ssr: false });
 
 export default function Home() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Close mobile menu when clicking outside or on a link
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (mobileMenuOpen) setMobileMenuOpen(false);
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [mobileMenuOpen]);
+  
+  // Prevent scrolling when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <>
+      <ScrollObserver targetId="skills-section" threshold={0.2} rootMargin="-100px" />
+    <main className="min-h-screen text-[#ededed] relative" style={{ background: 'radial-gradient(circle at bottom, #2C313D, #08090B)' }}>
+      {/* 3D Scrolling Scene */}
+      <ZScrollScene>
+        <ZScrollContent />
+      </ZScrollScene>
+      
+      {/* Content Overlay - This will be visible on top of the 3D scene */}
+      <div className="z-scroll-overlay">
+        {/* Navigation - Fixed at the top */}
+        <nav className="fixed top-0 left-0 w-full flex justify-between items-center px-4 md:px-8 lg:justify-center pt-6 md:pt-8 pb-4 z-50 bg-gradient-to-b from-[#08090B] to-transparent">
+          {/* Logo for mobile */}
+          <div className="md:hidden">
+            <Link href="/" className="text-[#ededed] font-bold text-xl">
+              Portfolio
+            </Link>
+          </div>
+          
+          {/* Desktop Navigation */}
+          <ul className="hidden md:flex md:space-x-8 lg:space-x-16">
+            <li>
+              <Link href="/" className="text-[#ededed] font-medium">
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="#skills-section"
+                className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
+              >
+                Skills
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/about"
+                className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
+              >
+                About me
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/contact"
+                className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
+              >
+                Contact
+              </Link>
+            </li>
+          </ul>
+          
+          {/* Mobile Menu Button */}
+          <button 
+            className="md:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1.5 focus:outline-none"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMobileMenuOpen(!mobileMenuOpen);
+            }}
+            aria-label="Toggle menu"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <span className={`block w-6 h-0.5 bg-[#ededed] transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+            <span className={`block w-6 h-0.5 bg-[#ededed] transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : 'opacity-100'}`}></span>
+            <span className={`block w-6 h-0.5 bg-[#ededed] transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+          </button>
+          
+          {/* Mobile Menu Overlay */}
+          <div 
+            className={`fixed inset-0 bg-[#08090B]/95 backdrop-blur-sm z-40 md:hidden transition-all duration-300 ${
+              mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            }`}
+            onClick={(e) => e.stopPropagation()}
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            <div className="flex flex-col items-center justify-center h-full">
+              <ul className="flex flex-col items-center space-y-8 text-xl">
+                <li>
+                  <Link 
+                    href="/" 
+                    className="text-[#ededed] font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#skills-section"
+                    className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Skills
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/about"
+                    className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    About me
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/contact"
+                    className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </main>
+    </>
   );
 }

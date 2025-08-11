@@ -1,0 +1,6 @@
+.home-background {
+  background: radial-gradient(71.17% 71.15% at 43.65% 45.85%, #08090B 100%);
+  min-height: 100vh;
+  position: relative;
+  color: #ededed;
+}

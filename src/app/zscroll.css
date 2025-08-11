@@ -1,0 +1,101 @@
+/* Z-Index Scrolling Styles */
+
+/* Make sure the scrolling container takes up the full viewport */
+.z-scroll-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 0;
+  overflow: hidden; /* Prevent any potential overflow */
+  background: radial-gradient(circle at bottom, #2C313D, #08090B);
+}
+
+/* Canvas styling */
+canvas {
+  touch-action: none; /* Prevents default touch actions on mobile */
+  outline: none; /* Remove focus outline */
+}
+
+/* Create a scrollable space that's taller than the viewport */
+.z-scroll-space {
+  height: 300vh; /* 3x viewport height to allow for scrolling */
+  position: absolute;
+  width: 100%;
+  top: 0;
+}
+
+/* Style for content that overlays the 3D scene */
+.z-scroll-overlay {
+  position: relative;
+  z-index: 10;
+  pointer-events: none; /* Allow clicking through to the 3D scene */
+}
+
+/* But enable pointer events for interactive elements */
+.z-scroll-overlay a,
+.z-scroll-overlay button,
+.z-scroll-overlay input,
+.z-scroll-overlay select,
+.z-scroll-overlay textarea,
+.z-scroll-overlay [role="button"],
+.z-scroll-overlay nav {
+  pointer-events: auto;
+}
+
+/* Navigation styling */
+.z-scroll-overlay nav {
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+}
+
+.z-scroll-overlay nav:hover {
+  background-color: rgba(8, 9, 11, 0.8);
+}
+
+/* Section styling */
+.z-scroll-section {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+/* Hero section specific styles */
+.z-scroll-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Skills section specific styles */
+.z-scroll-skills {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+/* When skills section is in view */
+.z-scroll-skills.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Ensure text is readable over the 3D background */
+.z-scroll-overlay h1,
+.z-scroll-overlay h2,
+.z-scroll-overlay h3 {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Add a subtle backdrop to text for better readability */
+.z-scroll-text-backdrop {
+  background-color: rgba(8, 9, 11, 0.7);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  backdrop-filter: blur(5px);
+}
