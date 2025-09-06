@@ -1,9 +1,8 @@
 'use client';
 
 import { useRef, useMemo, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useQualitySettings } from '../utils/mobileOptimizer';
 
 // Custom shader for realistic fog effect
 const fogShader = {
@@ -94,22 +93,8 @@ interface FogEffectProps {
 }
 
 export default function FogEffect({ density = 0.05, scrollProgress = 0 }: FogEffectProps) {
-  // const { scene, camera, gl } = useThree();
+  const { scene, camera, gl } = useThree();
   const materialRef = useRef<THREE.ShaderMaterial | null>(null);
-  const qualitySettings = useQualitySettings();
-  
-  // Optimize shader complexity based on device capabilities
-  const optimizedFragmentShader = useMemo(() => {
-    // For low-end devices, use a simpler noise function with fewer iterations
-    if (qualitySettings.effectsQuality === 'low') {
-      return fogShader.fragmentShader.replace(
-        // Reduce FBM iterations from 6 to 3 for better performance
-        'for (int i = 0; i < 6; i++) {',
-        'for (int i = 0; i < 3; i++) {'
-      );
-    }
-    return fogShader.fragmentShader;
-  }, [qualitySettings.effectsQuality]);
   
   // Create shader material
   const shaderMaterial = useMemo(() => {
@@ -119,15 +104,14 @@ export default function FogEffect({ density = 0.05, scrollProgress = 0 }: FogEff
         fogColor: { value: new THREE.Color(0x08090B) },
         fogDensity: { value: density },
         time: { value: 0 },
-        // Adjust noise scale and speed based on device capabilities
-        noiseScale: { value: qualitySettings.effectsQuality === 'low' ? 0.5 : 1.0 },
-        noiseSpeed: { value: qualitySettings.effectsQuality === 'low' ? 0.1 : 0.2 },
+        noiseScale: { value: 1.0 },
+        noiseSpeed: { value: 0.2 },
       },
       vertexShader: fogShader.vertexShader,
-      fragmentShader: optimizedFragmentShader,
+      fragmentShader: fogShader.fragmentShader,
       transparent: true,
     });
-  }, [density, optimizedFragmentShader, qualitySettings.effectsQuality]);
+  }, [density]);
   
   // Set up render target and pass
   useEffect(() => {
@@ -148,32 +132,12 @@ export default function FogEffect({ density = 0.05, scrollProgress = 0 }: FogEff
     }
   }, [shaderMaterial, scrollProgress]);
   
-  // Animate fog with performance optimization
+  // Animate fog
   useFrame(({ clock }) => {
     if (materialRef.current) {
-      // For low-end devices, update less frequently for better performance
-      if (qualitySettings.effectsQuality === 'low') {
-        // Update every other frame
-        if (Math.floor(clock.getElapsedTime() * 60) % 2 === 0) {
-          materialRef.current.uniforms.time.value = clock.getElapsedTime();
-        }
-      } else {
-        materialRef.current.uniforms.time.value = clock.getElapsedTime();
-      }
+      materialRef.current.uniforms.time.value = clock.getElapsedTime();
     }
   });
-  
-  // Clean up resources on unmount
-  useEffect(() => {
-    // Store current ref value to use in cleanup
-    const material = materialRef.current;
-    
-    return () => {
-      if (material) {
-        material.dispose();
-      }
-    };
-  }, []);
   
   return (
     <mesh position={[0, 0, -1]}>
