@@ -15,6 +15,20 @@ const ZScrollContent = dynamic(() => import("../components/ZScrollContent"), { s
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
+  // Mobile detection
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      return window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    };
+    setIsMobileDevice(checkMobile());
+    
+    const handleResize = () => setIsMobileDevice(checkMobile());
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
   // Close mobile menu when clicking outside or on a link
   useEffect(() => {
     const handleClickOutside = () => {
@@ -43,7 +57,7 @@ export default function Home() {
     <main className="min-h-screen text-[#ededed] relative" style={{ background: 'radial-gradient(circle at bottom, #2C313D, #08090B)' }}>
       {/* 3D Scrolling Scene */}
       <ZScrollScene>
-        <ZScrollContent />
+        <ZScrollContent/>
       </ZScrollScene>
       
       {/* Content Overlay - This will be visible on top of the 3D scene */}

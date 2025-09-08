@@ -5,6 +5,12 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { ScrollControls, useScroll } from '@react-three/drei';
 import * as THREE from 'three';
 
+// Mobile detection utility
+const isMobile = () => {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
 // This component handles the actual 3D scene and responds to scroll
 function Scene({ children }: { children: React.ReactNode }) {
   const scroll = useScroll();
@@ -44,27 +50,50 @@ function Scene({ children }: { children: React.ReactNode }) {
 // Main component that sets up the Canvas and scroll container
 export default function ZScrollScene({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollHeight, setScrollHeight] = useState('200vh'); // Default scroll height
+  const [scrollHeight, setScrollHeight] = useState('200vh');
+  const [mobile, setMobile] = useState(false);
 
-  console.log(scrollHeight);
+  useEffect(() => {
+    setMobile(isMobile());
+    
+    const handleResize = () => setMobile(isMobile());
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Adjust scroll height based on content
   useEffect(() => {
     if (containerRef.current) {
-      // Set scroll height to at least 2x viewport height to ensure enough scroll space
-      setScrollHeight('300vh');
+      setScrollHeight(mobile ? '250vh' : '300vh');
     }
-  }, []);
+  }, [mobile]);
+  
+  // Mobile-optimized renderer settings
+  const canvasSettings = mobile ? {
+    dpr: [1, 1.5], // Limit pixel ratio on mobile
+    performance: { min: 0.8 }, // Maintain 80% performance
+    antialias: false, // Disable antialiasing on mobile
+    alpha: false, // Disable alpha for better performance
+    powerPreference: "high-performance" as const,
+  } : {
+    dpr: [1, 2],
+    antialias: true,
+    alpha: true,
+  };
   
   return (
     <div className="z-scroll-container">
-      <Canvas camera={{ position: [0, 0, 5], fov: 60 }}>
-        <ScrollControls pages={3} damping={0.2} distance={1}>
+      <Canvas 
+        camera={{ position: [0, 0, 5], fov: mobile ? 70 : 60 }}
+        gl={canvasSettings}
+        shadows={!mobile} // Disable shadows on mobile
+      >
+        <ScrollControls pages={mobile ? 2.5 : 3} damping={mobile ? 0.3 : 0.2} distance={1}>
           <Scene>
             {children}
           </Scene>
         </ScrollControls>
-        <fog attach="fog" args={['#08090B', 5, 20]} />
+        <fog attach="fog" args={['#08090B', mobile ? 3 : 5, mobile ? 15 : 20]} />
       </Canvas>
     </div>
   );
