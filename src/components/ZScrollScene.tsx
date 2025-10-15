@@ -27,10 +27,10 @@ function Scene({ children }: { children: React.ReactNode }) {
   useFrame(() => {
     if (groupRef.current) {
       // Move along z-axis based on scroll
-      const scrollOffset = scroll.offset;
+      const scrollOffset = scroll.offset * 2;
       
       // Move camera deeper into the scene as user scrolls
-      camera.position.z = 5 - scrollOffset * 10;
+      camera.position.z = 5 - scrollOffset * 18;
       
       // Slightly rotate camera based on scroll for a more dynamic effect
       camera.rotation.x = scrollOffset * 0.1;
@@ -64,7 +64,7 @@ export default function ZScrollScene({ children }: { children: React.ReactNode }
   // Adjust scroll height based on content
   useEffect(() => {
     if (containerRef.current) {
-      setScrollHeight(mobile ? '250vh' : '300vh');
+      setScrollHeight(mobile ? '1000vh' : '2800vh');
     }
   }, [mobile]);
   
@@ -88,7 +88,7 @@ export default function ZScrollScene({ children }: { children: React.ReactNode }
         gl={canvasSettings}
         shadows={!mobile} // Disable shadows on mobile
       >
-        <ScrollControls pages={mobile ? 2.5 : 3} damping={mobile ? 0.3 : 0.2} distance={1}>
+        <ScrollControls pages={mobile ? 6 : 12} damping={mobile ? 0.3 : 0.2} distance={2}>
           <Scene>
             {children}
           </Scene>

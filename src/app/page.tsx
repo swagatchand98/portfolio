@@ -88,15 +88,31 @@ export default function Home() {
             </li>
             <li>
               <Link
-                href="/about"
+                href="#projects-section"
                 className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
               >
-                About me
+                Projects
               </Link>
             </li>
             <li>
               <Link
-                href="/contact"
+                href="#experience-section"
+                className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
+              >
+                Experience
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="#education-section"
+                className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
+              >
+                Education
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="#contact-section"
                 className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
               >
                 Contact
@@ -147,16 +163,34 @@ export default function Home() {
                 </li>
                 <li>
                   <Link
-                    href="/about"
+                    href="#projects-section"
                     className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    About me
+                    Projects
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/contact"
+                    href="#experience-section"
+                    className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Experience
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#education-section"
+                    className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Education
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#contact-section"
                     className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
