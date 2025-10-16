@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Text, Float, Html, useScroll } from "@react-three/drei";
 import * as THREE from "three";
@@ -78,16 +78,64 @@ interface InteractiveProjectsProps {
   mobile: boolean;
 }
 
+
+function FloatingParticles() {
+  return (
+    <group>
+          {Array.from({ length: 5 }).map((_, i) => {
+                const angle = (i / 5) * Math.PI * 2;
+                const radius = 2.5;
+                return (
+                  <Float
+                    key={i}
+                    speed={5 + i * 0.1}
+                    rotationIntensity={0.1}
+                    floatIntensity={0.8}
+                  >
+                    <mesh
+                      position={[
+                        Math.cos(angle) * radius,
+                        Math.sin(angle) * radius * 0.3,
+                        0.5
+                      ]}
+                    >
+                      <sphereGeometry args={[0.008]} />
+                      <meshBasicMaterial
+                        color="#64FFDA"
+                        transparent={true}
+                        opacity={0.6}
+                      />
+                    </mesh>
+                  </Float>
+                );
+              })}
+    </group>
+  );
+}
+
+
 export default function InteractiveProjects({ mobile }: InteractiveProjectsProps) {
   const groupRef = useRef<THREE.Group>(null);
   const [hoveredProject, setHoveredProject] = useState<number | null>(null);
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const scroll = useScroll();
+
+  // Check for mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useFrame((state) => {
     if (groupRef.current) {
-      // Subtle floating animation
-      groupRef.current.position.y += Math.sin(state.clock.elapsedTime * 0.3) * 0.001;
+      // // Subtle floating animation
+      // groupRef.current.position.y += Math.sin(state.clock.elapsedTime * 0.3) * 0.001;
       
       // Animate individual project cards based on scroll
       const { offset } = scroll;
@@ -100,11 +148,11 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
           const projectProgress = Math.max(0, Math.min(1, (offset - projectStartOffset) * 8));
           
           // Animate from below and slightly rotated
-          const startY = mobile ? 2.2 - index * 1.8 - 1 : 2.8 - index * 2.2 - 1.5;
-          const endY = mobile ? 2.2 - index * 1.8 : 2.8 - index * 2.2;
+          // const startY = 2.8 - index * 2.2 - 1.5;
+          // const endY = 2.8 - index * 2.2;
           
-          child.position.y = THREE.MathUtils.lerp(startY, endY, projectProgress);
-          child.rotation.x = THREE.MathUtils.lerp(-0.2, 0, projectProgress);
+          // child.position.y = THREE.MathUtils.lerp(startY, endY, projectProgress);
+          // child.rotation.x = THREE.MathUtils.lerp(-0.2, 0, projectProgress);
           
           // Fade in effect
           child.traverse((meshChild) => {
@@ -137,11 +185,11 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
   };
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} position={[0, (isMobile ? 1.4 : 0), 0]}>
       {/* Section Title */}
       <Text
-        position={[0, mobile ? 3.5 : 3, 5]}
-        fontSize={mobile ? 0.4 : 0.3}
+        position={[0, isMobile ? 4 : 3, isMobile ? 5 : 5]}
+        fontSize={0.3}
         color="#ffffff"
         anchorX="center"
         anchorY="middle"
@@ -150,26 +198,40 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
       >
         Projects
       </Text>
+      <FloatingParticles />
 
       {/* Project Cards */}
       {projects.map((project, index) => {
         const isHovered = hoveredProject === index;
         const isSelected = selectedProject === index;
 
-        // Vertical layout - cards stacked one below another
-        const yPos = mobile ? 2.2 - index * 1.8 : (4.5 - index) * 0.8;
+        // Mobile: 2x2 grid layout, Desktop: vertical stack
+        let xPos = 0;
+        let yPos = 0;
+        let zPos = 0;
+        
+        if (isMobile) {
+          // 2x2 grid layout for mobile
+          // First 2 cards (index 0,1) on left column, next 2 cards (index 2,3) on right column
+          const col = Math.floor(index / 2); // 0 for first 2 cards, 1 for next 2 cards
+          const row = index % 2; // 0 for top card in column, 1 for bottom card in column
+          
+          xPos = 0 // Left or right column
+          yPos = 2 - (row * 2.5); // Top or bottom position in column
+          zPos = 6 * Math.floor(index / 2) // Same z-depth for mobile
+        } else {
+          // Desktop: vertical stack
+          xPos = 0;
+          yPos = (4.5 - index) * 0.8;
+          zPos = (index - 1) * 3;
+        }
 
         return (
-          <group key={project.name} name={`project-card-${index}`} position={[0, yPos, (index - 1) * 3]}>
-            <Float
-              speed={0.5}
-              rotationIntensity={0.05}
-              floatIntensity={0.1}
-            >
+          <group key={project.name} name={`project-card-${index}`} position={[xPos, yPos, zPos]}>
               <group scale={[1, 1, 1]}>
                 {/* Main Card Container */}
                 <mesh position={[0, 0, 0]}>
-                  <planeGeometry args={[mobile ? 4.2 : 4, mobile ? 1.4 : 1.6]} />
+                  <planeGeometry args={isMobile ? [3, 2.2] : [4, 1.6]} />
                   <meshBasicMaterial
                     color="#2C313D"
                     transparent={true}
@@ -177,36 +239,15 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
                     userData={{ baseOpacity: 0.9 }}
                   />
                 </mesh>
+                <FloatingParticles />
 
-                {/* Accent Border */}
-                <mesh position={[0, 0, 0.01]}>
-                  <planeGeometry args={[mobile ? 4.25 : 4.05, mobile ? 1.45 : 1.65]} />
-                  <meshBasicMaterial
-                    color={project.color}
-                    transparent={true}
-                    opacity={isHovered ? 0.4 : 0.2}
-                    userData={{ baseOpacity: isHovered ? 0.4 : 0.2 }}
-                  />
-                </mesh>
-
-                {/* Glow Effect on Hover */}
-                {isHovered && (
-                  <mesh position={[0, 0, -0.05]}>
-                    <planeGeometry args={[mobile ? 4.4 : 6.2, mobile ? 1.6 : 1.8]} />
-                    <meshBasicMaterial
-                      color={project.color}
-                      transparent={true}
-                      opacity={0.1}
-                    />
-                  </mesh>
-                )}
 
                 {/* Project Content */}
-                <group position={[mobile ? -1.9 : -1.8, 0, 0.02]}>
+                <group position={[-1.2, 0, 0.02]}>
                   {/* Project Name */}
                   <Text
-                    position={[0, mobile ? 0.4 : 0.5, 0]}
-                    fontSize={mobile ? 0.12 : 0.1}
+                    position={[0, isMobile ? 0.7 : 0.5, 0]}
+                    fontSize={isMobile? 0.15 :0.1}
                     color="#ffffff"
                     anchorX="left"
                     anchorY="middle"
@@ -218,23 +259,23 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
 
                   {/* Project Description */}
                   <Text
-                    position={[0, mobile ? 0.15 : 0.2, 0]}
-                    fontSize={mobile ? 0.07 : 0.07}
+                    position={[0, isMobile? 0.4 : 0.2, 0]}
+                    fontSize={isMobile? 0.08 : 0.07}
                     color="#cccccc"
                     anchorX="left"
                     anchorY="middle"
                     material-transparent={true}
-                    maxWidth={mobile ? 3.5 : 4.5}
+                    maxWidth={2.5}
                   >
                     {project.description}
                   </Text>
 
                   {/* Tech Stack */}
-                  <group position={[0, mobile ? -0.15 : -0.3, 0]}>
-                    {project.tech.slice(0, mobile ? 3 : 5).map((tech, techIndex) => (
-                      <group key={tech} position={[techIndex * (mobile ? 0.9 : 0.6), 0, 0]}>
+                  <group position={[0, -0.3, 0]}>
+                    {project.tech.slice(0, isMobile ? 4 : 5).map((tech, techIndex) => (
+                      <group key={tech} position={[techIndex * 0.6, 0, 0]}>
                         <mesh position={[0.25, 0, -0.01]}>
-                          <planeGeometry args={[mobile ? 0.7 : 0.5, 0.15]} />
+                          <planeGeometry args={[0.5, 0.15]} />
                           <meshBasicMaterial
                             color={project.color}
                             transparent={true}
@@ -244,7 +285,7 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
                         </mesh>
                         <Text
                           position={[0.25, 0, 0]}
-                          fontSize={mobile ? 0.05 : 0.05}
+                          fontSize={0.05}
                           color={project.color}
                           anchorX="center"
                           anchorY="middle"
@@ -257,7 +298,7 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
                   </group>
 
                   {/* Action Buttons */}
-                  <group position={[0, mobile ? -0.45 : -0.55, 0]}>
+                  <group position={[0, -0.55, 0]}>
                     {/* GitHub Button */}
                     <group position={[0, 0, 0]}>
                       <mesh position={[0.25, 0, -0.01]}>
@@ -289,7 +330,7 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
                           <meshBasicMaterial
                             color={project.color}
                             transparent={true}
-                            opacity={0.8}
+                            opacity={0.2}
                             userData={{ baseOpacity: 0.8 }}
                           />
                         </mesh>
@@ -309,7 +350,7 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
                 </group>
 
                 {/* Expand Indicator */}
-                <group position={[mobile ? 1.8 : 1.75, mobile ? 0.4 : 0.6, 0.05]}>
+                <group position={[1.75, 0.6, 0.05]}>
                   <mesh>
                     <sphereGeometry args={[0.03]} />
                     <meshBasicMaterial 
@@ -322,10 +363,10 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
 
                 {/* Detailed Information (Expanded State) */}
                 {isSelected && (
-                  <group position={[0, mobile ? -0.9 : -1.1, 0.03]}>
+                  <group position={[0, -1.1, 0.03]}>
                     {/* Details Background */}
                     <mesh position={[0, 0, -0.02]}>
-                      <planeGeometry args={[mobile ? 4.1 : 5.8, mobile ? 1.2 : 1.6]} />
+                      <planeGeometry args={[5.8, 1.6]} />
                       <meshBasicMaterial
                         color="#050505"
                         transparent={true}
@@ -336,7 +377,7 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
 
                     {/* Details Border */}
                     <mesh position={[0, 0, -0.01]}>
-                      <planeGeometry args={[mobile ? 4.15 : 5.85, mobile ? 1.25 : 1.65]} />
+                      <planeGeometry args={[5.85, 1.65]} />
                       <meshBasicMaterial
                         color={project.color}
                         transparent={true}
@@ -346,20 +387,20 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
                     </mesh>
 
                     {/* Project Details */}
-                    {project.details.slice(0, mobile ? 2 : 4).map((detail, detailIndex) => (
+                    {project.details.slice(0, 4).map((detail, detailIndex) => (
                       <Text
                         key={detailIndex}
                         position={[
-                          mobile ? -1.9 : -2.7, 
-                          mobile ? 0.35 - detailIndex * 0.3 : 0.5 - detailIndex * 0.25, 
+                          -2.7, 
+                          0.5 - detailIndex * 0.25, 
                           0
                         ]}
-                        fontSize={mobile ? 0.055 : 0.065}
+                        fontSize={0.065}
                         color="#bbbbbb"
                         anchorX="left"
                         anchorY="top"
                         material-transparent={true}
-                        maxWidth={mobile ? 3.6 : 5.2}
+                        maxWidth={5.2}
                       >
                         • {detail}
                       </Text>
@@ -369,10 +410,10 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
 
                 {/* Interactive Overlay */}
                 <Html
-                  position={[0, 0, 0.1]}
+                  position={[0, 5, 0.1]}
                   style={{
-                    width: mobile ? '336px' : '480px',
-                    height: mobile ? '112px' : '128px',
+                    width: isMobile ? '300px' : '480px',
+                    height: isMobile ? '420px' : '128px',
                     pointerEvents: 'auto',
                     cursor: 'pointer',
                     background: 'transparent'
@@ -389,8 +430,8 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
                       display: 'flex',
                       alignItems: 'flex-end',
                       justifyContent: 'flex-start',
-                      paddingLeft: mobile ? '20px' : '40px',
-                      paddingBottom: mobile ? '15px' : '20px'
+                      paddingLeft: '40px',
+                      paddingBottom: '20px'
                     }}
                   >
                     {/* GitHub Link */}
@@ -422,7 +463,6 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
                   </div>
                 </Html>
               </group>
-            </Float>
           </group>
         );
       })}
@@ -431,32 +471,28 @@ export default function InteractiveProjects({ mobile }: InteractiveProjectsProps
       <ambientLight intensity={0.2} />
       <pointLight
         position={[0, 2, 4]}
-        intensity={mobile ? 0.4 : 0.6}
+        intensity={0.6}
         color="#ffffff"
-        distance={mobile ? 10 : 15}
+        distance={15}
         decay={2}
       />
 
       {/* Accent Lighting */}
-      {!mobile && (
-        <>
-          <spotLight
-            position={[-3, 3, 2]}
-            angle={0.4}
-            penumbra={0.6}
-            intensity={0.3}
-            color="#4ECDC4"
-          />
-          
-          <spotLight
-            position={[3, 3, 2]}
-            angle={0.4}
-            penumbra={0.6}
-            intensity={0.3}
-            color="#FF6B6B"
-          />
-        </>
-      )}
+      <spotLight
+        position={[-3, 3, 2]}
+        angle={0.4}
+        penumbra={0.6}
+        intensity={0.3}
+        color="#4ECDC4"
+      />
+      
+      <spotLight
+        position={[3, 3, 2]}
+        angle={0.4}
+        penumbra={0.6}
+        intensity={0.3}
+        color="#FF6B6B"
+      />
     </group>
   );
 }

@@ -73,7 +73,7 @@ export default function ZScrollScene({ children }: { children: React.ReactNode }
     dpr: [1, 1.5], // Limit pixel ratio on mobile
     performance: { min: 0.8 }, // Maintain 80% performance
     antialias: false, // Disable antialiasing on mobile
-    alpha: false, // Disable alpha for better performance
+    alpha: true, // Keep alpha enabled to show background gradient
     powerPreference: "high-performance" as const,
   } : {
     dpr: [1, 2],

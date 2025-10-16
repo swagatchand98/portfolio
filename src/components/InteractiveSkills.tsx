@@ -68,11 +68,11 @@ interface SkillOrbProps {
   position: [number, number, number];
   index: number;
   onHover: (skill: typeof skillsData[0] | null) => void;
-  mobile: boolean;
 }
 
-function SkillOrb({ skill, position, index, onHover, mobile }: SkillOrbProps) {
+function SkillOrb({ skill, position, index, onHover }: SkillOrbProps) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
@@ -97,6 +97,11 @@ function SkillOrb({ skill, position, index, onHover, mobile }: SkillOrbProps) {
       const targetScale = hovered ? 1.2 : 1;
       meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
     }
+
+    // Counter-rotate the group to keep logos and text upright while circle spins
+    if (groupRef.current) {
+      groupRef.current.rotation.z = -state.clock.elapsedTime * 0.2;
+    }
   });
 
   const handlePointerOver = () => {
@@ -114,7 +119,7 @@ function SkillOrb({ skill, position, index, onHover, mobile }: SkillOrbProps) {
   if (!texture) return null;
 
   return (
-    <group position={position}>
+    <group position={position} ref={groupRef}>
       {/* Glowing background sphere */}
       {/* <mesh
         ref={meshRef}
@@ -136,7 +141,7 @@ function SkillOrb({ skill, position, index, onHover, mobile }: SkillOrbProps) {
         onPointerOut={handlePointerOut}
         scale={[0.2, 0.2, 0.2]}
       >
-        <planeGeometry args={[mobile ? 0.4 : 0.5, mobile ? 0.4 : 0.5]} />
+        <planeGeometry args={[0.5, 0.5]} />
         <meshBasicMaterial
           map={texture}
           transparent={true}
@@ -146,8 +151,8 @@ function SkillOrb({ skill, position, index, onHover, mobile }: SkillOrbProps) {
 
       {/* Skill name */}
       <Text
-        position={[0, mobile ? -0.5 : -0.09, 0]}
-        fontSize={mobile ? 0.08 : 0.03}
+        position={[0, -0.09, 0]}
+        fontSize={0.03}
         color={hovered ? skill.color : "#ffffff"}
         anchorX="center"
         anchorY="middle"
@@ -161,7 +166,7 @@ function SkillOrb({ skill, position, index, onHover, mobile }: SkillOrbProps) {
         <group>
           {Array.from({ length: 8 }).map((_, i) => {
             const angle = (i / 8) * Math.PI * 2;
-            const radius = mobile ? 0.6 : 0.1;
+            const radius = 0.1;
             return (
               <mesh
                 key={i}
@@ -193,34 +198,20 @@ export default function InteractiveSkills({ mobile }: InteractiveSkillsProps) {
 
   // Arrange skills in a circle pattern
   const getSkillPosition = (index: number): [number, number, number] => {
-    if (mobile) {
-      // Grid layout for mobile
-      const cols = 3;
-      const row = Math.floor(index / cols);
-      const col = index % cols;
-      return [
-        (col - 1) * 1.2,
-        2 - row * 1.2,
-        0
-      ];
-    } else {
-      // Circle layout for desktop
-      const radius = 0.5;
-      const angle = (index / skillsData.length) * Math.PI * 2;
-      return [
-        Math.cos(angle) * radius,
-        Math.sin(angle) * radius,
-        0
-      ];
-    }
+    // Circle layout for desktop
+    const radius = 0.5;
+    const angle = (index / skillsData.length) * Math.PI * 2;
+    return [
+      Math.cos(angle) * radius,
+      Math.sin(angle) * radius,
+      0
+    ];
   };
 
   useFrame((state) => {
     if (groupRef.current) {
-      // Gentle rotation of the entire group
-      if (!mobile) {
-        groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.1) * 0.1;
-      }
+      // Continuous spinning rotation of the entire skill circle
+      groupRef.current.rotation.z = state.clock.elapsedTime * 0.2;
     }
   });
 
@@ -228,8 +219,8 @@ export default function InteractiveSkills({ mobile }: InteractiveSkillsProps) {
     <group ref={titleRef}>
     {/* Section title */}
       <Text
-        position={[0, mobile ? 4 : 2.75, 0]}
-        fontSize={mobile ? 0.2 : 0.07}
+        position={[0, 2.75, 0]}
+        fontSize={0.07}
         color="#ffffff"
         anchorX="center"
         anchorY="middle"
@@ -237,7 +228,7 @@ export default function InteractiveSkills({ mobile }: InteractiveSkillsProps) {
       >
         Skills
       </Text>
-    <group ref={groupRef} position={[0, mobile ? 0.5 : 2.75, 0]}>
+    <group ref={groupRef} position={[0, 2.75, 0]}>
       {/* Skill orbs */}
       {skillsData.map((skill, index) => (
         <SkillOrb
@@ -246,16 +237,15 @@ export default function InteractiveSkills({ mobile }: InteractiveSkillsProps) {
           position={getSkillPosition(index)}
           index={index}
           onHover={setHoveredSkill}
-          mobile={mobile}
         />
       ))}
 
       {/* Skill description panel */}
       {hoveredSkill && (
-        <group position={[0, mobile ? -2.5 : -3.5, 0]}>
+        <group position={[0, -3.5, 0]}>
           {/* Background panel */}
           <mesh position={[0, 0, -0.1]}>
-            <planeGeometry args={[mobile ? 4 : 5, mobile ? 1 : 1.2]} />
+            <planeGeometry args={[5, 1.2]} />
             <meshBasicMaterial
               color="#1a1a1a"
               transparent={true}
@@ -265,7 +255,7 @@ export default function InteractiveSkills({ mobile }: InteractiveSkillsProps) {
 
           {/* Border */}
           <mesh position={[0, 0, 0]}>
-            <planeGeometry args={[mobile ? 4.1 : 5.1, mobile ? 1.1 : 1.3]} />
+            <planeGeometry args={[5.1, 1.3]} />
             <meshBasicMaterial
               color={hoveredSkill.color}
               transparent={true}
@@ -275,8 +265,8 @@ export default function InteractiveSkills({ mobile }: InteractiveSkillsProps) {
 
           {/* Skill name */}
           <Text
-            position={[0, mobile ? 0.2 : 0.3, 0.1]}
-            fontSize={mobile ? 0.15 : 0.18}
+            position={[0, 0.3, 0.1]}
+            fontSize={0.18}
             color={hoveredSkill.color}
             anchorX="center"
             anchorY="middle"
@@ -287,8 +277,8 @@ export default function InteractiveSkills({ mobile }: InteractiveSkillsProps) {
 
           {/* Skill description */}
           <Text
-            position={[0, mobile ? -0.1 : -0.15, 0.1]}
-            fontSize={mobile ? 0.09 : 0.11}
+            position={[0, -0.15, 0.1]}
+            fontSize={0.11}
             color="#ffffff"
             anchorX="center"
             anchorY="middle"
@@ -301,9 +291,9 @@ export default function InteractiveSkills({ mobile }: InteractiveSkillsProps) {
 
       {/* Background particles */}
       <group>
-        {Array.from({ length: mobile ? 20 : 50 }).map((_, i) => {
+        {Array.from({ length: 50 }).map((_, i) => {
           const angle = Math.random() * Math.PI * 2;
-          const radius = mobile ? 4 : 6;
+          const radius = 6;
           return (
             <mesh
               key={i}
@@ -327,9 +317,9 @@ export default function InteractiveSkills({ mobile }: InteractiveSkillsProps) {
       {/* Ambient glow effect */}
       <pointLight
         position={[0, 0, 2]}
-        intensity={mobile ? 0.5 : 1}
+        intensity={1}
         color="#4a90e2"
-        distance={mobile ? 8 : 12}
+        distance={12}
         decay={2}
       />
     </group>

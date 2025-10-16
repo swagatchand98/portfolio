@@ -1,56 +1,52 @@
 "use client";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
-// import SplineWrapper from "../components/SplineWrapper";
 import ScrollObserver from "../components/ScrollObserver";
 import "./zscroll.css";
-
-// Dynamically import components
-// const AnimatedGrid = dynamic(() => import("../components/AnimatedGrid"));
-const ZScrollScene = dynamic(() => import("../components/ZScrollScene"), { ssr: false });
-const ZScrollContent = dynamic(() => import("../components/ZScrollContent"), { ssr: false });
+import ZScrollScene from "../components/ZScrollScene";
+import ZScrollContent from "../components/ZScrollContent";
 
 export default function Home() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  // Mobile detection
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
-  
-  useEffect(() => {
-    const checkMobile = () => {
-      return window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    };
-    setIsMobileDevice(checkMobile());
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  // Function to scroll to specific sections
+  const scrollToSection = (sectionName: string) => {
+    // Close mobile menu if open
+    setIsMobileMenuOpen(false);
     
-    const handleResize = () => setIsMobileDevice(checkMobile());
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
-  // Close mobile menu when clicking outside or on a link
-  useEffect(() => {
-    const handleClickOutside = () => {
-      if (mobileMenuOpen) setMobileMenuOpen(false);
+    // Calculate scroll positions based on section
+    const scrollPositions = {
+      home: 0,
+      skills: 0.25,
+      projects: 0.45,
+      experience: 0.65,
+      education: 0.8,
+      contact: 0.95
     };
+
+    const targetPosition = scrollPositions[sectionName as keyof typeof scrollPositions] || 0;
     
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [mobileMenuOpen]);
-  
-  // Prevent scrolling when mobile menu is open
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [mobileMenuOpen]);
+    // Get the scroll container (the main element with scroll)
+    const scrollContainer = document.documentElement || document.body;
+    const maxScroll = scrollContainer.scrollHeight - window.innerHeight;
+    const targetScroll = maxScroll * targetPosition;
+
+    // Smooth scroll to target position
+    scrollContainer.scrollTo({
+      top: targetScroll,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <>
       <ScrollObserver targetId="skills-section" threshold={0.2} rootMargin="-100px" />
@@ -63,143 +59,132 @@ export default function Home() {
       {/* Content Overlay - This will be visible on top of the 3D scene */}
       <div className="z-scroll-overlay">
         {/* Navigation - Fixed at the top */}
-        <nav className="fixed top-0 left-0 w-full flex justify-between items-center px-4 md:px-8 lg:justify-center pt-6 md:pt-8 pb-4 z-50 bg-gradient-to-b from-[#08090B] to-transparent">
-          {/* Logo for mobile */}
+        <nav className="fixed top-0 left-0 w-full flex justify-between items-center px-4 md:px-8 pt-4 md:pt-8 pb-4 z-50 bg-gradient-to-b from-[#08090B] to-transparent">
+          {/* Logo/Brand - Mobile */}
           <div className="md:hidden">
-            <Link href="/" className="text-[#ededed] font-bold text-xl">
-              Portfolio
+            <Link href="/" className="text-[#ededed] font-medium text-lg">
+              SC
             </Link>
           </div>
-          
+
           {/* Desktop Navigation */}
-          <ul className="hidden md:flex md:space-x-8 lg:space-x-16">
+          <ul className="hidden md:flex space-x-16 mx-auto">
             <li>
-              <Link href="/" className="text-[#ededed] font-medium">
+              <button 
+                onClick={() => scrollToSection('home')}
+                className="text-[#ededed] font-medium hover:text-[#ffffff] transition-colors"
+              >
                 Home
-              </Link>
+              </button>
             </li>
             <li>
-              <Link
-                href="#skills-section"
+              <button
+                onClick={() => scrollToSection('skills')}
                 className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
               >
                 Skills
-              </Link>
+              </button>
             </li>
             <li>
-              <Link
-                href="#projects-section"
+              <button
+                onClick={() => scrollToSection('projects')}
                 className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
               >
                 Projects
-              </Link>
+              </button>
             </li>
             <li>
-              <Link
-                href="#experience-section"
+              <button
+                onClick={() => scrollToSection('experience')}
                 className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
               >
                 Experience
-              </Link>
+              </button>
             </li>
             <li>
-              <Link
-                href="#education-section"
+              <button
+                onClick={() => scrollToSection('education')}
                 className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
               >
                 Education
-              </Link>
+              </button>
             </li>
             <li>
-              <Link
-                href="#contact-section"
+              <button
+                onClick={() => scrollToSection('contact')}
                 className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
               >
                 Contact
-              </Link>
+              </button>
             </li>
           </ul>
-          
+
           {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1.5 focus:outline-none"
-            onClick={(e) => {
-              e.stopPropagation();
-              setMobileMenuOpen(!mobileMenuOpen);
-            }}
-            aria-label="Toggle menu"
+          <button
+            className="md:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1"
+            onClick={toggleMobileMenu}
+            aria-label="Toggle mobile menu"
           >
-            <span className={`block w-6 h-0.5 bg-[#ededed] transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-            <span className={`block w-6 h-0.5 bg-[#ededed] transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : 'opacity-100'}`}></span>
-            <span className={`block w-6 h-0.5 bg-[#ededed] transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+            <span 
+              className={`block w-6 h-0.5 bg-[#ededed] transition-all duration-300 ${
+                isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
+              }`}
+            ></span>
+            <span 
+              className={`block w-6 h-0.5 bg-[#ededed] transition-all duration-300 ${
+                isMobileMenuOpen ? 'opacity-0' : ''
+              }`}
+            ></span>
+            <span 
+              className={`block w-6 h-0.5 bg-[#ededed] transition-all duration-300 ${
+                isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
+              }`}
+            ></span>
           </button>
-          
+
           {/* Mobile Menu Overlay */}
-          <div 
-            className={`fixed inset-0 bg-[#08090B]/95 backdrop-blur-sm z-40 md:hidden transition-all duration-300 ${
-              mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-            }`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex flex-col items-center justify-center h-full">
-              <ul className="flex flex-col items-center space-y-8 text-xl">
-                <li>
-                  <Link 
-                    href="/" 
-                    className="text-[#ededed] font-medium"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#skills-section"
-                    className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Skills
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#projects-section"
-                    className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Projects
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#experience-section"
-                    className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Experience
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#education-section"
-                    className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Education
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#contact-section"
-                    className="text-[#8a8a8a] hover:text-[#ededed] transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Contact
-                  </Link>
-                </li>
-              </ul>
+          {isMobileMenuOpen && (
+            <div className="md:hidden fixed inset-0 bg-[#08090B] bg-opacity-95 backdrop-blur-md z-40">
+              <div className="flex flex-col items-center justify-center h-full space-y-8">
+                <button 
+                  onClick={() => scrollToSection('home')}
+                  className="text-[#ededed] font-medium text-xl hover:text-[#ffffff] transition-colors"
+                >
+                  Home
+                </button>
+                <button
+                  onClick={() => scrollToSection('skills')}
+                  className="text-[#8a8a8a] hover:text-[#ededed] transition-colors text-xl"
+                >
+                  Skills
+                </button>
+                <button
+                  onClick={() => scrollToSection('projects')}
+                  className="text-[#8a8a8a] hover:text-[#ededed] transition-colors text-xl"
+                >
+                  Projects
+                </button>
+                <button
+                  onClick={() => scrollToSection('experience')}
+                  className="text-[#8a8a8a] hover:text-[#ededed] transition-colors text-xl"
+                >
+                  Experience
+                </button>
+                <button
+                  onClick={() => scrollToSection('education')}
+                  className="text-[#8a8a8a] hover:text-[#ededed] transition-colors text-xl"
+                >
+                  Education
+                </button>
+                <button
+                  onClick={() => scrollToSection('contact')}
+                  className="text-[#8a8a8a] hover:text-[#ededed] transition-colors text-xl"
+                >
+                  Contact
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </nav>
       </div>
     </main>

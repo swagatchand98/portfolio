@@ -14,7 +14,6 @@
 
 /* Canvas styling */
 canvas {
-  touch-action: none; /* Prevents default touch actions on mobile */
   outline: none; /* Remove focus outline */
 }
 
