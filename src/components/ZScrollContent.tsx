@@ -110,39 +110,6 @@ function ParticleSystem({
   );
 }
 
-
-// Projects data
-const projects = [
-  {
-    name: "E-Commerce Platform",
-    description: "Full-stack e-commerce solution with React, Node.js, and MongoDB",
-    tech: ["React", "Node.js", "MongoDB", "Stripe"],
-    color: "#FF6B6B",
-    link: "https://github.com/swagatchand98"
-  },
-  {
-    name: "Real-time Chat App",
-    description: "WebSocket-based chat application with user authentication",
-    tech: ["Socket.io", "Express", "JWT", "React"],
-    color: "#4ECDC4",
-    link: "https://github.com/swagatchand98"
-  },
-  {
-    name: "Task Management System",
-    description: "Collaborative project management tool with real-time updates",
-    tech: ["Next.js", "Prisma", "PostgreSQL", "Tailwind"],
-    color: "#45B7D1",
-    link: "https://github.com/swagatchand98"
-  },
-  {
-    name: "AI Content Generator",
-    description: "AI-powered content creation tool using OpenAI API",
-    tech: ["Python", "FastAPI", "OpenAI", "React"],
-    color: "#96CEB4",
-    link: "https://github.com/swagatchand98"
-  }
-];
-
 // Experience data
 const experiences = [
   {
@@ -1074,7 +1041,7 @@ export default function ZScrollContent() {
           >
             {/* Card background with improved glass effect */}
             <mesh position={[0, 0, -0.01]}>
-              <planeGeometry args={isMobile ? [5.2, 3.0] : [4.2, 2.4]} />
+              <planeGeometry args={isMobile ? [3.5, 3.0] : [4.2, 2.4]} />
               <meshBasicMaterial
                 color="#0A0A0A"
                 transparent={true}
@@ -1084,7 +1051,7 @@ export default function ZScrollContent() {
 
             {/* Enhanced gradient border */}
             <mesh position={[0, 0, -0.02]}>
-              <planeGeometry args={isMobile ? [5.3, 3.1] : [4.3, 2.5]} />
+              <planeGeometry args={isMobile ? [3.6, 3.1] : [4.3, 2.5]} />
               <meshBasicMaterial
                 color={edu.color}
                 transparent={true}
@@ -1093,14 +1060,14 @@ export default function ZScrollContent() {
             </mesh>
 
             {/* Icon background with better positioning */}
-            <mesh position={[-1.6, 0.8, 0.01]}>
+            <mesh position={[isMobile ? -1 : -1.6, 0.8, 0.01]}>
               <circleGeometry args={[0.25]} />
               <meshBasicMaterial color={edu.color} transparent={true} opacity={0.2} />
             </mesh>
 
             {/* Icon */}
             <Text
-              position={[-1.6, 0.8, 0.02]}
+              position={[isMobile ? -1 : -1.6, 0.8, 0.02]}
               fontSize={0.18}
               color={edu.color}
               anchorX="center"
@@ -1112,7 +1079,7 @@ export default function ZScrollContent() {
 
             {/* Degree title - better positioned */}
             <Text
-              position={[-1.2, 0.4, 0.1]}
+              position={[-1.2, isMobile ? 0.2 : 0.4, 0.1]}
               fontSize={0.13}
               color="#ffffff"
               anchorX="left"
@@ -1125,7 +1092,7 @@ export default function ZScrollContent() {
 
             {/* Institution */}
             <Text
-              position={[-1.2, 0.1, 0.1]}
+              position={[-1.2, isMobile ? 0 : 0.1, 0.1]}
               fontSize={0.1}
               color={edu.color}
               anchorX="left"
@@ -1138,7 +1105,7 @@ export default function ZScrollContent() {
 
             {/* Period */}
             <Text
-              position={[-1.2, -0.15, 0.1]}
+              position={[-1.2, isMobile ? -0.2 : -0.15, 0.1]}
               fontSize={0.09}
               color="#AAAAAA"
               anchorX="left"
@@ -1267,8 +1234,14 @@ export default function ZScrollContent() {
               anchorX="center"
               anchorY="middle"
               material-transparent={true}
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open('mailto:swagatsaswatchand@gmail.com', '_blank');
+              }}
+              onPointerOver={() => document.body.style.cursor = 'pointer'}
+              onPointerOut={() => document.body.style.cursor = 'default'}
             >
-              swagat@example.com
+              swagatsaswatchand@gmail.com
             </Text>
           </group>
 
@@ -1291,6 +1264,12 @@ export default function ZScrollContent() {
               anchorX="center"
               anchorY="middle"
               material-transparent={true}
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open('https://github.com/swagatchand98', '_blank');
+              }}
+              onPointerOver={() => document.body.style.cursor = 'pointer'}
+              onPointerOut={() => document.body.style.cursor = 'default'}
             >
               github.com/swagatchand98
             </Text>
@@ -1315,8 +1294,14 @@ export default function ZScrollContent() {
               anchorX="center"
               anchorY="middle"
               material-transparent={true}
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open('https://www.linkedin.com/in/swagat-chand-947a6b2ba/', '_blank');
+              }}
+              onPointerOver={() => document.body.style.cursor = 'pointer'}
+              onPointerOut={() => document.body.style.cursor = 'default'}
             >
-              linkedin.com/in/swagatchand
+              linkedin.com/in/swagat-chand
             </Text>
           </group>
 
@@ -1340,7 +1325,7 @@ export default function ZScrollContent() {
               anchorY="middle"
               material-transparent={true}
             >
-              San Francisco, CA
+              Bangalore, India
             </Text>
           </group>
         </group>

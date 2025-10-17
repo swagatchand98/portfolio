@@ -67,3 +67,34 @@ html, body {
   overflow-x: hidden;
   scrollbar-width: none;
 }
+
+/* Mobile Navigation Fixes */
+@media (max-width: 767px) {
+  /* Force hide desktop navigation on mobile */
+  .desktop-nav {
+    display: none !important;
+  }
+  
+  /* Ensure mobile menu button is visible */
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+  
+  /* Ensure mobile logo is visible */
+  .mobile-logo {
+    display: block !important;
+  }
+}
+
+@media (min-width: 768px) {
+  /* Force show desktop navigation on desktop */
+  .desktop-nav {
+    display: flex !important;
+  }
+  
+  /* Hide mobile elements on desktop */
+  .mobile-menu-btn,
+  .mobile-logo {
+    display: none !important;
+  }
+}
